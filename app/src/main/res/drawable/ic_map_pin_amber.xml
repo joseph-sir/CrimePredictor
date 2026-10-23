@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+
+    <!-- Pin Shadow Base -->
+    <path
+        android:fillColor="#30000000"
+        android:pathData="M18,31 C22,31 25,32.5 25,33 C25,33.5 22,35 18,35 C14,35 11,33.5 11,33 C11,32.5 14,31 18,31 Z" />
+
+    <!-- Amber / Orange Location Pin -->
+    <path
+        android:fillColor="#C4820A"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M18,2 C11.4,2 6,7.4 6,14 C6,23 18,32 18,32 C18,32 30,23 30,14 C30,7.4 24.6,2 18,2 Z M18,18 C15.8,18 14,16.2 14,14 C14,11.8 15.8,10 18,10 C20.2,10 22,11.8 22,14 C22,16.2 20.2,18 18,18 Z" />
+
+</vector>

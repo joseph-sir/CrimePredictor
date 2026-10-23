@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Crime Predictor Africa</title>
+    <style>
+        :root {
+            --bg: #F6F4EE;
+            --card: #FFFFFF;
+            --card2: #EFECE5;
+            --track: #E2DDD3;
+            --line: #DCD5C9;
+            --tx: #121212;
+            --mu: #68635B;
+            --mu2: #8E887E;
+            --sec: #121212;
+            --ac: #121212;
+            --acx: #F6F4EE;
+            --nav: #FFFFFF;
+            --page: #EDE9E1;
+            --h1: #FFFFFF;
+            --h2: #EFECE5;
+            --sos: #FAECEB;
+            --sosl: #E8B4B1;
+            --ex: #A8322D;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--page);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--tx);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .app {
+            width: 100%;
+            max-width: 420px;
+            min-height: 100vh;
+            background: var(--bg);
+            padding: 16px 16px 96px;
+        }
+        .hdr {
+            display: flex;
+            align-items: center;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        .hdr h1 { margin: 0; font-size: 15px; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 800; }
+        .hdr small { color: var(--mu); font-size: 11px; display: block; margin-top: 2px; }
+        .tag-badge {
+            margin-left: auto;
+            background: var(--card2);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            color: var(--mu);
+        }
+        h2 { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tx); margin: 20px 0 8px; font-weight: 800; }
+        .card h2 { margin-top: 0; }
+        .f { border-bottom: 1px solid var(--line); padding: 8px 2px; }
+        .f label { display: block; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--mu); font-weight: 700; }
+        .f small { display: block; font-size: 10px; color: var(--mu2); margin-top: 3px; }
+        select, input:not([type=range]):not([type=file]), textarea {
+            width: 100%; background: transparent; color: var(--tx); border: 0; font: inherit; font-size: 14px; padding: 6px 0; outline: none; appearance: none;
+        }
+        textarea { resize: none; height: 76px; }
+        option { background: var(--card); color: var(--tx); }
+        .row { display: flex; align-items: center; gap: 14px; padding: 12px 2px; border-bottom: 1px solid var(--line); }
+        .row span { font-size: 12px; color: var(--mu); font-weight: 600; }
+        .row b { color: var(--tx); font-size: 16px; width: 50px; text-align: center; }
+        input[type=range] { flex: 1; accent-color: var(--black_primary, #121212); }
+        button { font: inherit; cursor: pointer; color: var(--tx); }
+        .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 0; }
+        .chip { background: var(--card2); border: 1px solid var(--line); border-radius: 20px; padding: 7px 12px; font-size: 12px; font-weight: 600; }
+        .chip.now { background: var(--ac); color: var(--acx); border-color: var(--ac); font-weight: 700; }
+        .go {
+            width: 100%; margin-top: 20px; background: #121212; color: #F6F4EE; border: 0; border-radius: 10px; padding: 15px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; font-size: 12px;
+        }
+        .seg { display: flex; background: var(--card2); border: 1px solid var(--line); border-radius: 10px; padding: 3px; margin: 12px 0; }
+        .seg button { flex: 1; background: none; border: 0; border-radius: 8px; padding: 9px 6px; font-size: 12px; color: var(--mu); font-weight: 600; }
+        .seg button.on { background: #121212; color: #F6F4EE; font-weight: 700; }
+        .foot { text-align: center; color: var(--mu2); font-size: 10px; margin-top: 24px; line-height: 1.6; }
+        .hide { display: none !important; }
+        .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-top: 12px; }
+        .gauge { display: flex; align-items: center; gap: 16px; }
+        .score-block {
+            width: 90px; height: 90px; border-radius: 12px; background: var(--card2); border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; flex: none;
+        }
+        .score-block strong { font-size: 32px; font-weight: 800; color: var(--tx); line-height: 1; }
+        .score-block em { font-style: normal; font-size: 10px; color: var(--mu); margin-top: 4px; }
+        .lvl { font-size: 19px; font-weight: 800; }
+        .sum { font-size: 12px; color: var(--mu); line-height: 1.5; margin-top: 4px; }
+        .conf { display: inline-block; margin-top: 6px; font-size: 10px; background: var(--card2); color: var(--mu); border: 1px solid var(--line); padding: 3px 8px; border-radius: 6px; font-weight: 700; }
+        .bar { margin: 10px 0; }
+        .bar p { margin: 0 0 4px; font-size: 12px; display: flex; justify-content: space-between; font-weight: 600; }
+        .bar p span { color: var(--mu); }
+        .bar div { height: 6px; background: var(--track); border-radius: 4px; overflow: hidden; }
+        .bar i { display: block; height: 100%; background: #121212; }
+        .hs { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+        .hs:last-child { border: 0; }
+        .hs em { font-style: normal; width: 22px; height: 22px; border-radius: 50%; background: var(--card2); color: var(--tx); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); }
+        .hs b { margin-left: auto; font-weight: 700; }
+        .tip, p.ab { font-size: 12px; color: var(--mu); line-height: 1.6; margin: 6px 0; }
+        .acts { display: flex; gap: 8px; margin-top: 10px; }
+        .btn2 { flex: 1; background: var(--card2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; font-size: 12px; font-weight: 700; color: var(--tx); }
+        .sos { display: flex; gap: 8px; }
+        .sos a { flex: 1; text-align: center; text-decoration: none; color: var(--tx); background: var(--sos); border: 1px solid var(--sosl); border-radius: 10px; padding: 10px; font-size: 12px; }
+        .sos a b { display: block; font-size: 16px; color: var(--ex); font-weight: 800; }
+        .err { color: var(--ex); font-size: 12px; min-height: 16px; margin-top: 10px; }
+        .nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 420px; background: var(--nav); border-top: 1px solid var(--line); display: flex; padding: 8px 4px calc(8px + env(safe-area-inset-bottom,0px));
+        }
+        .nav button {
+            flex: 1; background: none; border: 0; color: var(--mu); font-size: 11px; font-weight: 700; padding: 6px 2px; text-transform: uppercase; letter-spacing: 0.04em;
+        }
+        .nav button.on { color: var(--tx); border-bottom: 2px solid var(--tx); }
+    </style>
+</head>
+<body>
+<datalist id="dl"></datalist>
+<div class="app">
+    <div class="hdr">
+        <div>
+            <h1>Crime Predictor</h1>
+            <small id="hs0"> South Africa </small>
+        </div>
+        <div class="tag-badge" id="tgRole">Prototype</div>
+    </div>
+
+    <!-- AUTH -->
+    <section id="auth" class="hide">
+        <div class="seg" id="am"><button class="on" data-m="in">Sign in</button><button data-m="up">Sign up</button></div>
+        <div class="seg" id="rl"><button class="on" data-r="user">Citizen</button><button data-r="le">Law enforcement</button></div>
+        <div class="card">
+            <div class="f hide" id="nmw"><label>Full name</label><input id="nm" autocomplete="name"></div>
+            <div class="f"><label>Email</label><input id="em" type="email" autocomplete="email"></div>
+            <div class="f"><label>Password (min 6 characters)</label><input id="pw" type="password" autocomplete="current-password"></div>
+            <div class="f hide" id="arw"><label>Home area (suburb / township)</label><input id="ar0" list="dl" placeholder="e.g. Tembisa"></div>
+            <div id="lef" class="hide">
+                <div class="f"><label>Service / badge number</label><input id="bg"></div>
+                <div class="f"><label>Police station</label><input id="sn"></div>
+                <p class="tip">Demo only: in production, law enforcement accounts would be verified by SAPS before approval.</p>
+            </div>
+            <div class="err" id="err"></div>
+            <button class="go" id="sub" style="margin-top:8px">Sign in</button>
+        </div>
+        <div class="foot"> * </div>
+    </section>
+
+    <!-- MAIN -->
+    <main id="main">
+        <section id="t-predict">
+            <div id="form">
+                <h2>Prediction Parameters</h2>
+                <div class="chips">
+                    <button class="chip now" data-p="now">Use current time</button>
+                    <button class="chip" data-p="tonight">Tonight</button>
+                    <button class="chip" data-p="weekend">Weekend evening</button>
+                    <button class="chip" data-p="commute">Morning commute</button>
+                </div>
+                <div class="f"><label>Area (suburb / township)</label><input id="area" list="dl" placeholder="e.g. Tembisa"><small>Type or pick your area.</small></div>
+                <div class="f"><label>Crime Type</label><select id="crime"></select></div>
+                <div class="row"><span>Hour</span><b id="hv">12:00</b><input type="range" id="hour" min="0" max="23" value="12"></div>
+                <div class="f"><label>Day of Week</label><select id="day"></select></div>
+                <div class="f"><label>Month</label><select id="mon"></select></div>
+                <div class="f"><label>Socio-economic Index (0â€“100)</label><input type="number" id="idx" min="0" max="100" value="80"><small>Higher = greater deprivation / unemployment pressure.</small></div>
+                <button class="go" id="go">Predict Hotspot Risk</button>
+            </div>
+            <div id="res" class="hide">
+                <button class="chip" id="back" style="margin-top:12px">Back to parameters</button>
+                <div class="card">
+                    <div class="gauge">
+                        <div class="score-block">
+                            <strong id="score">0</strong>
+                            <em>/ 100</em>
+                        </div>
+                        <div>
+                            <div class="lvl" id="lvl"></div>
+                            <div class="sum" id="sum"></div>
+                            <span class="conf" id="conf"></span>
+                        </div>
+                    </div>
+                    <div class="acts">
+                        <button class="btn2" id="share">Share</button>
+                        <button class="btn2" id="rep">Report in this area</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>24-Hour Risk Profile</h2>
+                    <svg id="chart" viewBox="0 0 320 120" width="100%"></svg>
+                    <div class="tip" id="peak"></div>
+                </div>
+                <div class="card">
+                    <h2>Contributing Factors</h2>
+                    <div id="factors"></div>
+                    <div class="tip" id="cr"></div>
+                </div>
+                <div class="card">
+                    <h2 id="hh">Higher-risk areas nearby</h2>
+                    <div id="hs"></div>
+                </div>
+                <div class="card">
+                    <h2>Safety Insight</h2>
+                    <div class="tip" id="tip"></div>
+                </div>
+                <div class="card">
+                    <h2>Emergency Contacts</h2>
+                    <div class="sos">
+                        <a href="tel:10111"><b>10111</b>SAPS Police</a>
+                        <a href="tel:112"><b>112</b>Emergency (cell)</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="t-alerts" class="hide">
+            <h2>Community Alerts</h2>
+            <div class="seg" style="margin:0 0 12px">
+                <button class="on" data-f="my" id="fmy">My area</button>
+                <button data-f="all">All areas</button>
+            </div>
+            <div id="al"></div>
+        </section>
+
+        <section id="t-report" class="hide">
+            <h2>Report an Incident</h2>
+            <div class="card">
+                <div class="f"><label>Area (suburb / township)</label><input id="ra" list="dl" placeholder="e.g. Tembisa"></div>
+                <div class="f"><label>Crime Type</label><select id="rc"></select></div>
+                <div class="f"><label>Brief description</label><textarea id="rd" maxlength="240" placeholder="What happened, roughly when and where? Avoid personal names."></textarea><small id="cnt">0 / 240</small></div>
+                <div class="err" id="rerr"></div>
+                <button class="go" id="rsub" style="margin-top:8px">Post report</button>
+                <p class="tip">Reports are visible to other users and law enforcement. In an emergency call 10111 or 112 first.</p>
+            </div>
+        </section>
+
+        <section id="t-history" class="hide">
+            <h2>Prediction History</h2>
+            <div class="card" id="hl"></div>
+            <button class="btn2" id="clr" style="width:100%;margin-top:12px">Clear history</button>
+        </section>
+
+        <section id="t-profile" class="hide">
+            <h2>Profile</h2>
+            <div class="card">
+                <div><b id="pn">Citizen User</b><small class="s" id="pe" style="display:block;color:var(--mu);margin-top:4px">user@example.com</small></div>
+                <div class="conf" id="pr" style="margin-top:8px">Citizen</div>
+                <div class="f" style="margin-top:14px"><label>Home area</label><input id="pa" list="dl" value="Tembisa"></div>
+            </div>
+            <h2>Emergency Contacts</h2>
+            <div class="sos">
+                <a href="tel:10111"><b>10111</b>SAPS Police</a>
+                <a href="tel:112"><b>112</b>Emergency (cell)</a>
+            </div>
+            <button class="btn2" id="out" style="width:100%;margin-top:20px;color:var(--ex)">Sign out</button>
+        </section>
+
+        <div class="foot">Simulated Data Â· Academic Prototype</div>
+    </main>
+</div>
+
+<div class="nav" id="nav">
+    <button class="on" data-t="predict">Predict</button>
+    <button data-t="alerts">Alerts</button>
+    <button data-t="report">Report</button>
+    <button data-t="history">History</button>
+    <button data-t="profile">Profile</button>
+</div>
+
+<script>
+const $=id=>document.getElementById(id),Q=s=>document.querySelectorAll(s),mem={};
+const get=(k,d)=>{if(mem[k]!==undefined)return mem[k];try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+const put=(k,v)=>{mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const A={"Tembisa":["Gauteng",.9],"Soweto":["Gauteng",.88],"Alexandra":["Gauteng",.9],"Johannesburg CBD":["Gauteng",.92],"Pretoria CBD":["Gauteng",.85],"Mamelodi":["Gauteng",.82],"Soshanguve":["Gauteng",.8],"Sandton":["Gauteng",.6],"Centurion":["Gauteng",.5],"Khayelitsha":["Western Cape",.9],"Nyanga":["Western Cape",.95],"Mitchells Plain":["Western Cape",.85],"Cape Town CBD":["Western Cape",.75],"Umlazi":["KwaZulu-Natal",.82],"Inanda":["KwaZulu-Natal",.8],"Durban CBD":["KwaZulu-Natal",.8],"Pietermaritzburg":["KwaZulu-Natal",.65],"Mdantsane":["Eastern Cape",.75],"Gqeberha North End":["Eastern Cape",.7],"Mthatha":["Eastern Cape",.7],"Bloemfontein CBD":["Free State",.6],"Mangaung":["Free State",.55],"Polokwane":["Limpopo",.45],"Thohoyandou":["Limpopo",.4],"Mbombela":["Mpumalanga",.55],"Emalahleni":["Mpumalanga",.55],"Rustenburg":["North West",.6],"Mahikeng":["North West",.5],"Kimberley":["Northern Cape",.5],"Upington":["Northern Cape",.4]};
+$("dl").innerHTML=Object.keys(A).map(x=>`<option value="${x}">`).join("");
+const info=n=>{const k=Object.keys(A).find(x=>x.toLowerCase()==n.trim().toLowerCase());return k?[k,...A[k]]:[n.trim(),"Other",.5]};
+const crimes={"Assault":[1,"Avoid isolated streets and drinking venues late at night; walk in groups and stay in well-lit areas."],"Robbery":[.95,"Keep phones and valuables out of sight, avoid ATMs at night and stay alert at traffic lights."],"Burglary":[.85,"Check locks and alarms, keep lights on timers and tell a trusted neighbour when you are away."],"Vehicle Theft":[.8,"Park in secure, well-lit areas, use a steering lock or tracker and never leave items on display."],"Murder":[.6,"Avoid known conflict areas after dark and share your location with someone you trust."],"Sexual Offences":[.7,"Never leave drinks unattended, use trusted transport and share your trip details with a friend."],"Theft":[.9,"Keep bags zipped and in front of you in crowded places, and avoid displaying electronics."]};
+const days=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],dw=[.6,.55,.55,.65,.85,.95,.8];
+const mons=["January","February","March","April","May","June","July","August","September","October","November","December"],mw=[.85,.7,.65,.65,.6,.6,.65,.65,.7,.75,.8,.95];
+const fill=(el,a)=>el.innerHTML=a.map(x=>`<option>${x}</option>`).join("");
+fill($("crime"),Object.keys(crimes));fill($("rc"),Object.keys(crimes));fill($("day"),days);fill($("mon"),mons);$("mon").value="June";
+const hh=h=>String(h).padStart(2,"0")+":00";
+const hourW=h=>{const d=Math.min(Math.abs(h-21),24-Math.abs(h-21));return .35+.65*Math.max(0,1-d/8)};
+const lv=s=>s<30?["Low","#2E6948"]:s<55?["Moderate","#C4820A"]:s<75?["High","#A8322D"]:["Critical","#7D1A16"];
+
+let reports=get("cp_rep",[
+    {id:"s1",area:"Tembisa",crime:"Robbery",desc:"Phone snatching near taxi rank around sunset. Stay alert.",t:Date.now()-2*3600000,by:"Citizen",role:"user",status:"New",c:3},
+    {id:"s2",area:"Alexandra",crime:"Burglary",desc:"Two house break-ins overnight. Watch active.",t:Date.now()-9*3600000,by:"Citizen",role:"user",status:"Under investigation",c:5}
+]);
+let user={name:"Citizen User",email:"user@example.com",area:"Tembisa",role:"user"};
+
+function calc(P,h){
+    const b=info(P.a)[2];
+    const f=[["Area baseline",b],["Time of day",hourW(h)],["Day of week",dw[P.d]],["Seasonality",mw[P.m]],["Socio-economic index",Math.max(0,Math.min(100,P.ix))/100],["Community reports",0.25]],w=[.3,.2,.13,.11,.16,.1];
+    return{f,s:Math.round(Math.min(99,Math.max(3,f.reduce((a,x,i)=>a+x[1]*w[i],0)*crimes[P.c][0]*115)))};
+}
+
+const read=()=>({a:$("area").value.trim()||"Tembisa",c:$("crime").value,h:+$("hour").value,d:days.indexOf($("day").value),m:mons.indexOf($("mon").value),ix:+$("idx").value||80});
+$("hour").oninput=e=>$("hv").textContent=hh(e.target.value);
+
+Q(".chip[data-p]").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.p,n=new Date();
+    if(k=="now"){$("hour").value=n.getHours();$("hv").textContent=hh(n.getHours());}
+    if(k=="tonight"){$("hour").value=21;$("hv").textContent="21:00";}
+    if(k=="weekend"){$("hour").value=20;$("hv").textContent="20:00";$("day").value="Saturday";}
+    if(k=="commute"){$("hour").value=7;$("hv").textContent="07:00";$("day").value="Monday";}
+});
+
+$("go").onclick=()=>{
+    const P=read(),res=calc(P,P.h),L=lv(res.s),inf=info(P.a);
+    $("score").textContent=res.s;
+    $("lvl").textContent=L[0]+" Risk";
+    $("lvl").style.color=L[1];
+    $("sum").textContent=`${P.c} in ${inf[0]}, ${days[P.d]} ${hh(P.h)}, ${mons[P.m]}.`;
+    $("conf").textContent="Confidence: High";
+    $("factors").innerHTML=res.f.map(x=>`<div class="bar"><p>${x[0]}<span>${Math.round(x[1]*100)}%</span></p><div><i style="width:${x[1]*100}%"></i></div></div>`).join("");
+    $("tip").textContent=(res.s>=55?"Elevated risk window. ":"Relatively low risk, but stay aware. ")+crimes[P.c][1];
+
+    let sv="";
+    for(let h=0;h<24;h++){
+        const v=calc(P,h).s,bh=v*0.8;
+        sv+=`<rect x="${h*13+4}" y="${95-bh}" width="9" height="${bh}" rx="2" fill="${lv(v)[1]}" opacity="${h==P.h?1:0.6}" ${h==P.h?'stroke="#121212" stroke-width="1.5"':''}/>`;
+        if(h%6==0||h==23)sv+=`<text x="${h*13+8}" y="112" style="fill:#68635B" font-size="9" text-anchor="middle">${hh(h).slice(0,2)}h</text>`;
+    }
+    $("chart").innerHTML=sv;
+    $("peak").textContent="Selected hour is highlighted with border.";
+
+    $("form").classList.add("hide");
+    $("res").classList.remove("hide");
+};
+
+$("back").onclick=()=>{$("res").classList.add("hide");$("form").classList.remove("hide");};
+$("rep").onclick=()=>tab("report");
+
+function tab(t){
+    ["predict","alerts","report","history","profile"].forEach(k=>{
+        const el=$("t-"+k);if(el)el.classList.toggle("hide",k!=t);
+    });
+    Q("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.t==t));
+    window.scrollTo(0,0);
+}
+Q("#nav button").forEach(b=>b.onclick=()=>tab(b.dataset.t));
+</script>
+</body>
+</html>
