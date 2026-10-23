@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Standard Android system colors -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -8,8 +9,44 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Custom colors -->
-    <color name="gold">#FFB612</color>
-    <color name="dark_bg">#0a0e17</color>
-    <color name="card_bg">#141c2b</color>
+    <!-- ===== Modern Slate Navy + Warm Cream Palette ===== -->
+    <!-- Backgrounds & Surfaces -->
+    <color name="bg_beige">#FAF8F3</color>
+    <color name="card_beige">#FFFFFF</color>
+    <color name="card_surface">#FFFFFF</color>
+    <color name="card_border">#E2DDD2</color>
+
+    <!-- Primary Brand Navy (exact dark slate tone from design) -->
+    <color name="navy_primary">#2B384E</color>
+    <color name="navy_dark">#212C3E</color>
+    <color name="header_start">#2B384E</color>
+    <color name="header_end">#253043</color>
+
+    <!-- Aliases for backwards compatibility -->
+    <color name="black_primary">#2B384E</color>
+    <color name="black_secondary">#212C3E</color>
+    <color name="black_muted">#4A5568</color>
+
+    <!-- Text colors -->
+    <color name="text_primary">#1C2533</color>
+    <color name="text_muted">#647083</color>
+    <color name="text_subtle">#8A92A0</color>
+
+    <!-- Accents -->
+    <color name="accent_sand">#C9A876</color>
+    <color name="accent_sand_light">#EFEADF</color>
+
+    <!-- Ripples -->
+    <color name="ripple_light">#1F2B384E</color>
+    <color name="ripple_dark">#33FFFFFF</color>
+
+    <!-- Risk level indicators -->
+    <color name="risk_low">#2E6948</color>
+    <color name="risk_low_bg">#E8F3EC</color>
+    <color name="risk_moderate">#C4820A</color>
+    <color name="risk_moderate_bg">#FEF7EA</color>
+    <color name="risk_high">#A8322D</color>
+    <color name="risk_high_bg">#FAECEB</color>
+    <color name="risk_critical">#7D1A16</color>
+    <color name="risk_critical_bg">#F5E5E4</color>
 </resources>

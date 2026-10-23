@@ -1,5 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.CrimePredictor" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Brand -->
+        <item name="colorPrimary">@color/black_primary</item>
+        <item name="colorPrimaryVariant">@color/black_secondary</item>
+        <item name="colorOnPrimary">@color/bg_beige</item>
+        <item name="colorSecondary">@color/accent_sand</item>
+        <item name="colorOnSecondary">@color/black_primary</item>
 
-    <style name="Theme.CrimePredictor" parent="android:Theme.Material.Light.NoActionBar" />
+        <!-- Surfaces -->
+        <item name="android:colorBackground">@color/bg_beige</item>
+        <item name="colorSurface">@color/card_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorError">@color/risk_high</item>
+
+        <!-- System bars -->
+        <item name="android:windowBackground">@color/bg_beige</item>
+        <item name="android:statusBarColor">@color/bg_beige</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/card_surface</item>
+
+        <!-- Buttons: rounded, less ALL-CAPS shouting -->
+        <item name="materialButtonStyle">@style/AppButton</item>
+
+        <!-- Text inputs get brand color on focus -->
+        <item name="colorControlActivated">@color/accent_sand</item>
+        <item name="colorControlHighlight">@color/ripple_light</item>
+    </style>
+
+    <style name="AppButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
 </resources>
