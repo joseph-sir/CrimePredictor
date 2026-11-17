@@ -20,6 +20,7 @@ public class ReportEntity {
     public String status;
     public int confirmCount;
     public String confirmedByJson;
+    public String verifiedByOfficer;
 
     public ReportEntity() {}
 
@@ -37,5 +38,6 @@ public class ReportEntity {
         this.status = status;
         this.confirmCount = confirmCount;
         this.confirmedByJson = confirmedByJson;
+        this.verifiedByOfficer = "";
     }
 }

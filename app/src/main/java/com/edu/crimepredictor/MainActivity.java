@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.*;
@@ -43,7 +44,11 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigation;
 
     // Root Views
-    private View viewAuth, viewPredict, viewAlerts, viewReport, viewHistory, viewProfile;
+    private View viewAuth, viewPredict, viewAlerts, viewReport, viewHistory, viewProfile, viewLEDashboard;
+
+    // LE Dashboard
+    private TextView tvLePendingCount, tvLeVerifiedCount, tvLeRejectedCount;
+    private LinearLayout containerLeValidationList;
 
     // Auth Screen
     private TextView btnAuthModeSignIn, btnAuthModeSignUp;
@@ -231,6 +236,13 @@ public class MainActivity extends AppCompatActivity {
         btnProfileCall10111 = findViewById(R.id.btnProfileCall10111);
         btnProfileCall112 = findViewById(R.id.btnProfileCall112);
         btnSignOut = findViewById(R.id.btnSignOut);
+
+        // LE Dashboard Views
+        viewLEDashboard = findViewById(R.id.viewLEDashboard);
+        tvLePendingCount = findViewById(R.id.tvLePendingCount);
+        tvLeVerifiedCount = findViewById(R.id.tvLeVerifiedCount);
+        tvLeRejectedCount = findViewById(R.id.tvLeRejectedCount);
+        containerLeValidationList = findViewById(R.id.containerLeValidationList);
 
         setupDropdowns();
         setupListeners();
@@ -505,9 +517,17 @@ public class MainActivity extends AppCompatActivity {
         if (usersJson != null) {
             Type type = new TypeToken<Map<String, User>>(){}.getType();
             Map<String, User> map = gson.fromJson(usersJson, type);
-            if (map != null) return map;
+            if (map != null && !map.isEmpty()) return map;
         }
-        return new HashMap<>();
+        // Seed default demo accounts for instant testing
+        Map<String, User> defaultMap = new HashMap<>();
+        String demoPassHash = hashPassword("password123");
+        User demoCitizen = new User("Sipho Dlamini", "citizen@demo.com", demoPassHash, "user", "Tembisa", "", "");
+        User demoPolice = new User("Captain Khumalo", "police@demo.com", demoPassHash, "le", "Tembisa", "SAP-8842", "Tembisa SAPS");
+        defaultMap.put("citizen@demo.com", demoCitizen);
+        defaultMap.put("police@demo.com", demoPolice);
+        prefs.edit().putString("cp_users_map", gson.toJson(defaultMap)).apply();
+        return defaultMap;
     }
 
     // ================= AUTH MANAGEMENT =================
@@ -531,7 +551,7 @@ public class MainActivity extends AppCompatActivity {
         viewProfile.setVisibility(View.GONE);
         bottomNavigation.setVisibility(View.GONE);
 
-        tvHeaderSubtitle.setText("South Africa Â· Authentication");
+        tvHeaderSubtitle.setText("South Africa · Authentication");
         tvRoleBadge.setText("Guest");
         setAuthMode(false);
     }
@@ -559,18 +579,20 @@ public class MainActivity extends AppCompatActivity {
         btnAuthRoleLE.setTextColor(isCitizen ? getResources().getColor(R.color.text_muted) : getResources().getColor(R.color.bg_beige));
 
         layoutAuthLEFields.setVisibility(isSignUpMode && !isCitizen ? View.VISIBLE : View.GONE);
+        tvAuthError.setVisibility(View.GONE);
     }
 
     private void handleAuthSubmit() {
+        tvAuthError.setVisibility(View.GONE);
         String email = etAuthEmail.getText() != null ? etAuthEmail.getText().toString().trim().toLowerCase() : "";
         String pass = etAuthPassword.getText() != null ? etAuthPassword.getText().toString() : "";
 
-        if (email.isEmpty() || !email.contains("@")) {
-            showAuthError("Please enter a valid email address.");
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            showAuthError("Please enter a valid email address (e.g., user@domain.com).");
             return;
         }
         if (pass.length() < 6) {
-            showAuthError("Password must be at least 6 characters.");
+            showAuthError("Password must be at least 6 characters long.");
             return;
         }
 
@@ -581,7 +603,7 @@ public class MainActivity extends AppCompatActivity {
             String name = etAuthName.getText() != null ? etAuthName.getText().toString().trim() : "";
             String area = actvAuthArea.getText() != null ? actvAuthArea.getText().toString().trim() : "";
             if (name.isEmpty() || area.isEmpty()) {
-                showAuthError("Please enter your name and home area.");
+                showAuthError("Please enter your full name and home area.");
                 return;
             }
             String badge = "";
@@ -590,30 +612,34 @@ public class MainActivity extends AppCompatActivity {
                 badge = etAuthBadge.getText() != null ? etAuthBadge.getText().toString().trim() : "";
                 station = etAuthStation.getText() != null ? etAuthStation.getText().toString().trim() : "";
                 if (badge.isEmpty() || station.isEmpty()) {
-                    showAuthError("Enter your service badge number and station.");
+                    showAuthError("Law Enforcement registration requires a service badge number and police station.");
                     return;
                 }
             }
 
             if (users.containsKey(email)) {
-                showAuthError("An account with this email already exists.");
+                showAuthError("An account with this email address already exists. Please Sign In.");
                 return;
             }
 
             currentUser = new User(name, email, passHash, authSelectedRole, area, badge, station);
             saveCurrentUser();
+            Toast.makeText(this, "Account created! Welcome, " + name, Toast.LENGTH_SHORT).show();
             onUserLoggedIn();
         } else {
             User existing = users.get(email);
-            if (existing == null || !existing.getPasswordHash().equals(passHash)) {
-                // If demo user doesn't exist, create a default session for convenience
-                currentUser = new User("Citizen User", email, passHash, authSelectedRole, "Tembisa", "", "");
-                saveCurrentUser();
-                onUserLoggedIn();
+            if (existing == null) {
+                showAuthError("No account found with this email. Please check your email or Sign Up.");
                 return;
             }
+            if (!existing.getPasswordHash().equals(passHash)) {
+                showAuthError("Incorrect password. Please try again.");
+                return;
+            }
+
             currentUser = existing;
             saveCurrentUser();
+            Toast.makeText(this, "Signed in as " + (currentUser.isLawEnforcement() ? "Law Enforcement" : "Citizen"), Toast.LENGTH_SHORT).show();
             onUserLoggedIn();
         }
     }
@@ -638,7 +664,7 @@ public class MainActivity extends AppCompatActivity {
 
         tvProfileName.setText(currentUser.getName());
         tvProfileEmail.setText(currentUser.getEmail() +
-                (currentUser.isLawEnforcement() ? " Â· " + currentUser.getStation() + " Â· #" + currentUser.getBadge() : ""));
+                (currentUser.isLawEnforcement() ? " \u00B7 " + currentUser.getStation() + " \u00B7 #" + currentUser.getBadge() : ""));
         tvProfileRoleTag.setText(roleLabel);
         tvProfileHint.setText(currentUser.isLawEnforcement() ?
                 "You can review and update the status of community reports from the Alerts tab." :
@@ -674,13 +700,18 @@ public class MainActivity extends AppCompatActivity {
     // ================= TAB NAVIGATION =================
 
     private void switchTab(String tabName) {
+        boolean isLE = currentUser != null && currentUser.isLawEnforcement();
+        if (viewLEDashboard != null) {
+            viewLEDashboard.setVisibility("le_dash".equals(tabName) && isLE ? View.VISIBLE : View.GONE);
+        }
         viewPredict.setVisibility("predict".equals(tabName) ? View.VISIBLE : View.GONE);
         viewAlerts.setVisibility("alerts".equals(tabName) ? View.VISIBLE : View.GONE);
         viewReport.setVisibility("report".equals(tabName) ? View.VISIBLE : View.GONE);
         viewHistory.setVisibility("history".equals(tabName) ? View.VISIBLE : View.GONE);
         viewProfile.setVisibility("profile".equals(tabName) ? View.VISIBLE : View.GONE);
 
-        if ("alerts".equals(tabName)) renderAlertsList();
+        if ("le_dash".equals(tabName) && isLE) renderLEDashboard();
+        else if ("alerts".equals(tabName)) renderAlertsList();
         else if ("history".equals(tabName)) renderHistoryList();
     }
 
@@ -721,11 +752,15 @@ public class MainActivity extends AppCompatActivity {
         int hour = sbHour.getProgress();
         int day = getArrayIndex(CrimeRiskCalculator.DAYS, actvDay.getText().toString());
         int month = getArrayIndex(CrimeRiskCalculator.MONTHS, actvMonth.getText().toString());
-        int socio = 50;
+        
+        CrimeRiskCalculator.AreaInfo areaInfo = CrimeRiskCalculator.getAreaInfo(area);
+        int socio = areaInfo.defaultSocioEconomicIndex;
         try {
-            String socioStr = etSocioIndex.getText() != null ? etSocioIndex.getText().toString().trim() : "";
-            if (!socioStr.isEmpty()) {
-                socio = Integer.parseInt(socioStr);
+            if (etSocioIndex != null && etSocioIndex.getText() != null) {
+                String socioStr = etSocioIndex.getText().toString().trim();
+                if (!socioStr.isEmpty()) {
+                    socio = Integer.parseInt(socioStr);
+                }
             }
         } catch (Exception ignored) {}
 
@@ -772,7 +807,7 @@ public class MainActivity extends AppCompatActivity {
             text1.setTextColor(Color.parseColor("#121212"));
             text1.setTextSize(13f);
             text2.setText(factor.percentage + "%");
-            text2.setTextColor(Color.parseColor("#68635B"));
+            text2.setTextColor(Color.parseColor("#4A5568"));
             text2.setTextSize(12f);
             containerFactors.addView(factorView);
         }
@@ -867,6 +902,7 @@ public class MainActivity extends AppCompatActivity {
 
         List<CommunityReport> filtered = new ArrayList<>();
         for (CommunityReport r : reportsList) {
+            if (r.isRejected()) continue; // Filter out rejected/false reports from public view
             if ("all".equals(selectedAlertFilter) || r.getArea().equalsIgnoreCase(userArea)) {
                 filtered.add(r);
             }
@@ -877,13 +913,12 @@ public class MainActivity extends AppCompatActivity {
             empty.setText("No community reports for this view yet.");
             empty.setPadding(10, 40, 10, 20);
             empty.setGravity(android.view.Gravity.CENTER);
-            empty.setTextColor(Color.parseColor("#68635B"));
+            empty.setTextColor(Color.parseColor("#8A92A0"));
             containerAlertsList.addView(empty);
             return;
         }
 
         for (CommunityReport report : filtered) {
-            View card = LayoutInflater.from(this).inflate(R.layout.activity_main, null); // reuse clean layout container
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.VERTICAL);
             item.setBackgroundResource(R.drawable.card_beige);
@@ -894,13 +929,13 @@ public class MainActivity extends AppCompatActivity {
             lp.setMargins(0, 0, 0, 24);
             item.setLayoutParams(lp);
 
-            // Header line: Crime + Area & Status
+            // Header line: Crime + Area & SAPS Verification Tag
             LinearLayout hdr = new LinearLayout(this);
             hdr.setOrientation(LinearLayout.HORIZONTAL);
             hdr.setGravity(android.view.Gravity.CENTER_VERTICAL);
 
             TextView tvTitle = new TextView(this);
-            tvTitle.setText(report.getCrime() + " Â· " + report.getArea());
+            tvTitle.setText(report.getCrime() + " \u00B7 " + report.getArea());
             tvTitle.setTextColor(Color.parseColor("#121212"));
             tvTitle.setTextSize(14f);
             tvTitle.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -908,31 +943,29 @@ public class MainActivity extends AppCompatActivity {
             tvTitle.setLayoutParams(tLp);
 
             TextView tvStatus = new TextView(this);
-            tvStatus.setText(report.getStatus());
+            tvStatus.setText(report.isVerifiedBySaps() ? "Verified by SAPS" : "Pending Verification");
             tvStatus.setTextSize(10f);
             tvStatus.setPadding(14, 4, 14, 4);
             tvStatus.setTypeface(null, android.graphics.Typeface.BOLD);
 
-            if ("Resolved".equalsIgnoreCase(report.getStatus())) {
+            if (report.isVerifiedBySaps()) {
                 tvStatus.setBackgroundResource(R.drawable.badge_risk_low);
                 tvStatus.setTextColor(Color.parseColor("#2E6948"));
-            } else if ("Under investigation".equalsIgnoreCase(report.getStatus())) {
+            } else {
                 tvStatus.setBackgroundResource(R.drawable.badge_risk_moderate);
                 tvStatus.setTextColor(Color.parseColor("#C4820A"));
-            } else {
-                tvStatus.setBackgroundResource(R.drawable.badge_role);
-                tvStatus.setTextColor(Color.parseColor("#68635B"));
             }
 
             hdr.addView(tvTitle);
             hdr.addView(tvStatus);
             item.addView(hdr);
 
-            // Subtitle: Time and Reporter
+            // Subtitle: Time, Reporter, and Status
             TextView tvSub = new TextView(this);
-            tvSub.setText(getTimeAgo(report.getTimestamp()) + " Â· " +
-                    ("le".equals(report.getRole()) ? "[Law Enforcement] " : "") + report.getBy());
-            tvSub.setTextColor(Color.parseColor("#68635B"));
+            tvSub.setText(getTimeAgo(report.getTimestamp()) + " \u00B7 " +
+                    ("le".equals(report.getRole()) ? "[Law Enforcement] " : "Reporter: ") + report.getBy() +
+                    (report.getStatus() != null && !report.getStatus().isEmpty() ? " \u00B7 Status: " + report.getStatus() : ""));
+            tvSub.setTextColor(Color.parseColor("#4A5568"));
             tvSub.setTextSize(11f);
             tvSub.setPadding(0, 4, 0, 12);
             item.addView(tvSub);
@@ -945,7 +978,7 @@ public class MainActivity extends AppCompatActivity {
             tvDesc.setLineSpacing(4f, 1f);
             item.addView(tvDesc);
 
-            // Action row: Confirm button & LE status change
+            // Action row: Confirm button & LE validation shortcut
             LinearLayout acts = new LinearLayout(this);
             acts.setOrientation(LinearLayout.HORIZONTAL);
             acts.setPadding(0, 14, 0, 0);
@@ -973,31 +1006,196 @@ public class MainActivity extends AppCompatActivity {
 
             if (currentUser != null && currentUser.isLawEnforcement()) {
                 Button btnStatusToggle = new Button(this);
-                btnStatusToggle.setText("Update Status");
+                btnStatusToggle.setText("Police Dashboard");
                 btnStatusToggle.setTextSize(11f);
-                btnStatusToggle.setTextColor(Color.parseColor("#121212"));
+                btnStatusToggle.setTextColor(Color.parseColor("#FFB612"));
                 btnStatusToggle.setBackgroundResource(R.drawable.btn_outline);
                 LinearLayout.LayoutParams sLp = new LinearLayout.LayoutParams(0, 90, 1f);
                 sLp.setMarginStart(12);
                 btnStatusToggle.setLayoutParams(sLp);
 
-                btnStatusToggle.setOnClickListener(v -> {
-                    if ("New".equalsIgnoreCase(report.getStatus())) {
-                        report.setStatus("Under investigation");
-                    } else if ("Under investigation".equalsIgnoreCase(report.getStatus())) {
-                        report.setStatus("Resolved");
-                    } else {
-                        report.setStatus("New");
-                    }
-                    saveReports();
-                    renderAlertsList();
-                    Toast.makeText(this, "Status updated to " + report.getStatus(), Toast.LENGTH_SHORT).show();
-                });
+                btnStatusToggle.setOnClickListener(v -> switchTab("le_dash"));
                 acts.addView(btnStatusToggle);
             }
 
             item.addView(acts);
             containerAlertsList.addView(item);
+        }
+    }
+
+    private void renderLEDashboard() {
+        if (containerLeValidationList == null) return;
+        containerLeValidationList.removeAllViews();
+
+        int pendingCount = 0;
+        int verifiedCount = 0;
+        int rejectedCount = 0;
+
+        for (CommunityReport r : reportsList) {
+            if (r.isRejected()) {
+                rejectedCount++;
+            } else if (r.isVerifiedBySaps()) {
+                verifiedCount++;
+            } else {
+                pendingCount++;
+            }
+        }
+
+        if (tvLePendingCount != null) tvLePendingCount.setText(String.valueOf(pendingCount));
+        if (tvLeVerifiedCount != null) tvLeVerifiedCount.setText(String.valueOf(verifiedCount));
+        if (tvLeRejectedCount != null) tvLeRejectedCount.setText(String.valueOf(rejectedCount));
+
+        if (reportsList.isEmpty()) {
+            TextView empty = new TextView(this);
+            empty.setText("No reports in the police verification queue.");
+            empty.setPadding(10, 30, 10, 20);
+            empty.setGravity(android.view.Gravity.CENTER);
+            empty.setTextColor(Color.parseColor("#8A92A0"));
+            containerLeValidationList.addView(empty);
+            return;
+        }
+
+        for (CommunityReport report : reportsList) {
+            LinearLayout item = new LinearLayout(this);
+            item.setOrientation(LinearLayout.VERTICAL);
+            item.setBackgroundResource(R.drawable.card_beige);
+            item.setPadding(28, 24, 28, 24);
+
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(0, 0, 0, 20);
+            item.setLayoutParams(lp);
+
+            // Header line: Crime + Area & Current Verification Tag
+            LinearLayout hdr = new LinearLayout(this);
+            hdr.setOrientation(LinearLayout.HORIZONTAL);
+            hdr.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+            TextView tvTitle = new TextView(this);
+            tvTitle.setText(report.getCrime() + " \u00B7 " + report.getArea());
+            tvTitle.setTextColor(Color.parseColor("#121212"));
+            tvTitle.setTextSize(14f);
+            tvTitle.setTypeface(null, android.graphics.Typeface.BOLD);
+            LinearLayout.LayoutParams tLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+            tvTitle.setLayoutParams(tLp);
+
+            TextView tvTag = new TextView(this);
+            tvTag.setText(report.getStatus());
+            tvTag.setTextSize(10f);
+            tvTag.setPadding(14, 4, 14, 4);
+            tvTag.setTypeface(null, android.graphics.Typeface.BOLD);
+
+            if (report.isRejected()) {
+                tvTag.setBackgroundResource(R.drawable.badge_risk_critical);
+                tvTag.setTextColor(Color.parseColor("#7D1A16"));
+            } else if (report.isVerifiedBySaps()) {
+                tvTag.setBackgroundResource(R.drawable.badge_risk_low);
+                tvTag.setTextColor(Color.parseColor("#2E6948"));
+            } else {
+                tvTag.setBackgroundResource(R.drawable.badge_risk_moderate);
+                tvTag.setTextColor(Color.parseColor("#C4820A"));
+            }
+
+            hdr.addView(tvTitle);
+            hdr.addView(tvTag);
+            item.addView(hdr);
+
+            // Subtitle
+            TextView tvSub = new TextView(this);
+            tvSub.setText(getTimeAgo(report.getTimestamp()) + " \u00B7 Reported by: " + report.getBy() + " (" + report.getConfirmCount() + " confirmations)");
+            tvSub.setTextColor(Color.parseColor("#4A5568"));
+            tvSub.setTextSize(11f);
+            tvSub.setPadding(0, 4, 0, 10);
+            item.addView(tvSub);
+
+            // Description
+            TextView tvDesc = new TextView(this);
+            tvDesc.setText(report.getDesc());
+            tvDesc.setTextColor(Color.parseColor("#121212"));
+            tvDesc.setTextSize(13f);
+            item.addView(tvDesc);
+
+            // Police Action Controls Row 1
+            LinearLayout actionsRow1 = new LinearLayout(this);
+            actionsRow1.setOrientation(LinearLayout.HORIZONTAL);
+            actionsRow1.setPadding(0, 14, 0, 0);
+
+            Button btnVerify = new Button(this);
+            btnVerify.setText("Verify Authentic");
+            btnVerify.setTextSize(10f);
+            btnVerify.setTextColor(Color.parseColor("#2E6948"));
+            btnVerify.setBackgroundResource(R.drawable.btn_outline);
+            LinearLayout.LayoutParams vLp = new LinearLayout.LayoutParams(0, 80, 1f);
+            vLp.setMarginEnd(6);
+            btnVerify.setLayoutParams(vLp);
+            btnVerify.setOnClickListener(v -> {
+                report.setStatus("Verified by SAPS");
+                if (currentUser != null) report.setVerifiedByOfficer(currentUser.getName());
+                saveReports();
+                renderLEDashboard();
+                Toast.makeText(this, "Report verified by SAPS", Toast.LENGTH_SHORT).show();
+            });
+
+            Button btnReject = new Button(this);
+            btnReject.setText("Flag False / Reject");
+            btnReject.setTextSize(10f);
+            btnReject.setTextColor(Color.parseColor("#A8322D"));
+            btnReject.setBackgroundResource(R.drawable.btn_outline);
+            LinearLayout.LayoutParams rLp = new LinearLayout.LayoutParams(0, 80, 1f);
+            btnReject.setLayoutParams(rLp);
+            btnReject.setOnClickListener(v -> {
+                report.setStatus("False / Rejected");
+                if (currentUser != null) report.setVerifiedByOfficer(currentUser.getName());
+                saveReports();
+                renderLEDashboard();
+                Toast.makeText(this, "Report flagged as false and hidden from public stats", Toast.LENGTH_SHORT).show();
+            });
+
+            actionsRow1.addView(btnVerify);
+            actionsRow1.addView(btnReject);
+            item.addView(actionsRow1);
+
+            // Police Action Controls Row 2
+            LinearLayout actionsRow2 = new LinearLayout(this);
+            actionsRow2.setOrientation(LinearLayout.HORIZONTAL);
+            actionsRow2.setPadding(0, 8, 0, 0);
+
+            Button btnInvestigate = new Button(this);
+            btnInvestigate.setText("Investigating");
+            btnInvestigate.setTextSize(10f);
+            btnInvestigate.setTextColor(Color.parseColor("#C4820A"));
+            btnInvestigate.setBackgroundResource(R.drawable.btn_outline);
+            LinearLayout.LayoutParams iLp = new LinearLayout.LayoutParams(0, 80, 1f);
+            iLp.setMarginEnd(6);
+            btnInvestigate.setLayoutParams(iLp);
+            btnInvestigate.setOnClickListener(v -> {
+                report.setStatus("Under investigation");
+                if (currentUser != null) report.setVerifiedByOfficer(currentUser.getName());
+                saveReports();
+                renderLEDashboard();
+                Toast.makeText(this, "Status: Under investigation", Toast.LENGTH_SHORT).show();
+            });
+
+            Button btnResolve = new Button(this);
+            btnResolve.setText("Mark Resolved");
+            btnResolve.setTextSize(10f);
+            btnResolve.setTextColor(Color.parseColor("#FFFFFF"));
+            btnResolve.setBackgroundResource(R.drawable.btn_black);
+            LinearLayout.LayoutParams resLp = new LinearLayout.LayoutParams(0, 80, 1f);
+            btnResolve.setLayoutParams(resLp);
+            btnResolve.setOnClickListener(v -> {
+                report.setStatus("Resolved");
+                if (currentUser != null) report.setVerifiedByOfficer(currentUser.getName());
+                saveReports();
+                renderLEDashboard();
+                Toast.makeText(this, "Status: Resolved", Toast.LENGTH_SHORT).show();
+            });
+
+            actionsRow2.addView(btnInvestigate);
+            actionsRow2.addView(btnResolve);
+            item.addView(actionsRow2);
+
+            containerLeValidationList.addView(item);
         }
     }
 
@@ -1079,16 +1277,16 @@ public class MainActivity extends AppCompatActivity {
             col.setLayoutParams(cLp);
 
             TextView t1 = new TextView(this);
-            t1.setText(item.getCrime() + " Â· " + item.getArea());
+            t1.setText(item.getCrime() + " \u00B7 " + item.getArea());
             t1.setTextColor(Color.parseColor("#121212"));
             t1.setTextSize(13f);
             t1.setTypeface(null, android.graphics.Typeface.BOLD);
 
             TextView t2 = new TextView(this);
-            t2.setText(String.format(Locale.getDefault(), "%s %02d:00 Â· %s",
+            t2.setText(String.format(Locale.getDefault(), "%s %02d:00 \u00B7 %s",
                     CrimeRiskCalculator.DAYS[item.getDayOfWeek()], item.getHour(),
                     CrimeRiskCalculator.MONTHS[item.getMonth()]));
-            t2.setTextColor(Color.parseColor("#68635B"));
+            t2.setTextColor(Color.parseColor("#4A5568"));
             t2.setTextSize(11f);
 
             col.addView(t1);

@@ -328,6 +328,138 @@
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- ================= LAW ENFORCEMENT DASHBOARD ================= -->
+            <LinearLayout
+                android:id="@+id/viewLEDashboard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:letterSpacing="0.05"
+                    android:text="SAPS LAW ENFORCEMENT DASHBOARD"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <!-- Overview Stats Grid -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:orientation="horizontal">
+
+                    <!-- Stats Card 1: Pending -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/card_beige"
+                        android:elevation="2dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/tvLePendingCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="#C4820A"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Pending Verification"
+                            android:textColor="@color/text_muted"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <!-- Stats Card 2: Verified -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/card_beige"
+                        android:elevation="2dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/tvLeVerifiedCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="#2E6948"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Verified Authentic"
+                            android:textColor="@color/text_muted"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                    <!-- Stats Card 3: Rejected -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/card_beige"
+                        android:elevation="2dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/tvLeRejectedCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="#A8322D"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Flagged / False"
+                            android:textColor="@color/text_muted"
+                            android:textSize="10sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="INCIDENT VALIDATION &amp; AUTHENTICATION QUEUE"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <!-- Container for Police Report Validation Queue -->
+                <LinearLayout
+                    android:id="@+id/containerLeValidationList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="20dp" />
+
+            </LinearLayout>
+
             <!-- ================= TAB 1: PREDICT ================= -->
             <LinearLayout
                 android:id="@+id/viewPredict"
@@ -525,12 +657,14 @@
                             android:textColor="@color/black_primary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Socio-economic Index -->
+                    <!-- Socio-economic Index (Auto-derived based on selected area) -->
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilSocioIndex"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="4dp"
+                        android:visibility="gone"
                         android:hint="Socio-economic Index (0–100)">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -577,7 +711,7 @@
                             android:background="@drawable/btn_outline"
                             android:text="View Risk Map"
                             android:textAllCaps="false"
-                            android:textColor="@color/text_primary"
+                            android:textColor="@color/white"
                             android:textSize="13sp"
                             android:textStyle="bold" />
 
@@ -600,7 +734,7 @@
                         android:paddingLeft="14dp"
                         android:paddingRight="14dp"
                         android:text="Back to parameters"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/white"
                         android:textSize="12sp" />
 
                     <!-- Primary Risk Gauge Card -->
@@ -632,7 +766,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="78"
-                                    android:textColor="@color/black_primary"
+                                    android:textColor="@color/white"
                                     android:textSize="36sp"
                                     android:textStyle="bold" />
 
@@ -701,7 +835,7 @@
                                 android:layout_weight="1"
                                 android:background="@drawable/btn_outline"
                                 android:text="Share"
-                                android:textColor="@color/text_primary"
+                                android:textColor="@color/white"
                                 android:textSize="12sp" />
 
                             <Button
@@ -712,7 +846,7 @@
                                 android:layout_weight="1"
                                 android:background="@drawable/btn_outline"
                                 android:text="Report in area"
-                                android:textColor="@color/text_primary"
+                                android:textColor="@color/white"
                                 android:textSize="12sp" />
                         </LinearLayout>
                     </LinearLayout>
@@ -1052,7 +1186,7 @@
                         android:layout_marginBottom="10dp"
                         android:background="@drawable/btn_outline"
                         android:text="Attach photo (optional)"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/white"
                         android:textSize="12sp" />
 
                     <ImageView
@@ -1127,7 +1261,7 @@
                     android:layout_marginTop="14dp"
                     android:background="@drawable/btn_outline"
                     android:text="Clear history"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/white"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -1201,21 +1335,6 @@
 
                         <AutoCompleteTextView
                             android:id="@+id/actvProfileArea"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/black_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <!-- Editable API Server URL -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:hint="API Server URL (10.0.2.2:8000 for emulator)">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etProfileServerUrl"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:textColor="@color/black_primary" />

@@ -8,11 +8,17 @@ public class CrimeRiskCalculator {
         public final String name;
         public final String province;
         public final double baselineRisk;
+        public final int defaultSocioEconomicIndex;
 
-        public AreaInfo(String name, String province, double baselineRisk) {
+        public AreaInfo(String name, String province, double baselineRisk, int defaultSocioEconomicIndex) {
             this.name = name;
             this.province = province;
             this.baselineRisk = baselineRisk;
+            this.defaultSocioEconomicIndex = defaultSocioEconomicIndex;
+        }
+
+        public AreaInfo(String name, String province, double baselineRisk) {
+            this(name, province, baselineRisk, 50);
         }
     }
 
@@ -69,57 +75,57 @@ public class CrimeRiskCalculator {
         }
     }
 
-    // South African Areas with Province and Baseline Risk
+    // South African Areas with Province, Baseline Risk, and Auto-derived Socio-Economic Index
     public static final Map<String, AreaInfo> AREAS = new LinkedHashMap<>();
     static {
         // Gauteng
-        addArea("Tembisa", "Gauteng", 0.90);
-        addArea("Soweto", "Gauteng", 0.88);
-        addArea("Alexandra", "Gauteng", 0.90);
-        addArea("Johannesburg CBD", "Gauteng", 0.92);
-        addArea("Pretoria CBD", "Gauteng", 0.85);
-        addArea("Mamelodi", "Gauteng", 0.82);
-        addArea("Soshanguve", "Gauteng", 0.80);
-        addArea("Sandton", "Gauteng", 0.60);
-        addArea("Centurion", "Gauteng", 0.50);
+        addArea("Tembisa", "Gauteng", 0.90, 35);
+        addArea("Soweto", "Gauteng", 0.88, 40);
+        addArea("Alexandra", "Gauteng", 0.90, 25);
+        addArea("Johannesburg CBD", "Gauteng", 0.92, 45);
+        addArea("Pretoria CBD", "Gauteng", 0.85, 55);
+        addArea("Mamelodi", "Gauteng", 0.82, 35);
+        addArea("Soshanguve", "Gauteng", 0.80, 35);
+        addArea("Sandton", "Gauteng", 0.60, 85);
+        addArea("Centurion", "Gauteng", 0.50, 75);
         // Western Cape
-        addArea("Khayelitsha", "Western Cape", 0.90);
-        addArea("Nyanga", "Western Cape", 0.95);
-        addArea("Mitchells Plain", "Western Cape", 0.85);
-        addArea("Cape Town CBD", "Western Cape", 0.75);
+        addArea("Khayelitsha", "Western Cape", 0.90, 25);
+        addArea("Nyanga", "Western Cape", 0.95, 20);
+        addArea("Mitchells Plain", "Western Cape", 0.85, 35);
+        addArea("Cape Town CBD", "Western Cape", 0.75, 80);
         // KwaZulu-Natal
-        addArea("Umlazi", "KwaZulu-Natal", 0.82);
-        addArea("Inanda", "KwaZulu-Natal", 0.80);
-        addArea("Durban CBD", "KwaZulu-Natal", 0.80);
-        addArea("Pietermaritzburg", "KwaZulu-Natal", 0.65);
+        addArea("Umlazi", "KwaZulu-Natal", 0.82, 35);
+        addArea("Inanda", "KwaZulu-Natal", 0.80, 30);
+        addArea("Durban CBD", "KwaZulu-Natal", 0.80, 60);
+        addArea("Pietermaritzburg", "KwaZulu-Natal", 0.65, 55);
         // Eastern Cape
-        addArea("Mdantsane", "Eastern Cape", 0.75);
-        addArea("Gqeberha North End", "Eastern Cape", 0.70);
-        addArea("Mthatha", "Eastern Cape", 0.70);
+        addArea("Mdantsane", "Eastern Cape", 0.75, 35);
+        addArea("Gqeberha North End", "Eastern Cape", 0.70, 50);
+        addArea("Mthatha", "Eastern Cape", 0.70, 40);
         // Free State
-        addArea("Bloemfontein CBD", "Free State", 0.60);
-        addArea("Mangaung", "Free State", 0.55);
+        addArea("Bloemfontein CBD", "Free State", 0.60, 60);
+        addArea("Mangaung", "Free State", 0.55, 40);
         // Limpopo
-        addArea("Polokwane", "Limpopo", 0.45);
-        addArea("Thohoyandou", "Limpopo", 0.40);
+        addArea("Polokwane", "Limpopo", 0.45, 55);
+        addArea("Thohoyandou", "Limpopo", 0.40, 45);
         // Mpumalanga
-        addArea("Mbombela", "Mpumalanga", 0.55);
-        addArea("Emalahleni", "Mpumalanga", 0.55);
+        addArea("Mbombela", "Mpumalanga", 0.55, 60);
+        addArea("Emalahleni", "Mpumalanga", 0.50, 50);
         // North West
-        addArea("Rustenburg", "North West", 0.60);
-        addArea("Mahikeng", "North West", 0.50);
+        addArea("Rustenburg", "North West", 0.60, 55);
+        addArea("Mahikeng", "North West", 0.50, 50);
         // Northern Cape
-        addArea("Kimberley", "Northern Cape", 0.50);
-        addArea("Upington", "Northern Cape", 0.40);
+        addArea("Kimberley", "Northern Cape", 0.50, 55);
+        addArea("Upington", "Northern Cape", 0.40, 50);
     }
 
-    private static void addArea(String name, String province, double baseline) {
-        AREAS.put(name.toLowerCase(), new AreaInfo(name, province, baseline));
+    private static void addArea(String name, String province, double baseline, int sei) {
+        AREAS.put(name.toLowerCase(), new AreaInfo(name, province, baseline, sei));
     }
 
     public static AreaInfo getAreaInfo(String inputArea) {
         if (inputArea == null || inputArea.trim().isEmpty()) {
-            return new AreaInfo("Specified Area", "Unknown", 0.50);
+            return new AreaInfo("Specified Area", "Unknown", 0.50, 50);
         }
         String key = inputArea.trim().toLowerCase();
         if (AREAS.containsKey(key)) {
@@ -130,7 +136,7 @@ public class CrimeRiskCalculator {
                 return entry.getValue();
             }
         }
-        return new AreaInfo(inputArea.trim(), "Other", 0.50);
+        return new AreaInfo(inputArea.trim(), "Other", 0.50, 50);
     }
 
     public static String[] getAllAreaNames() {
@@ -144,6 +150,7 @@ public class CrimeRiskCalculator {
 
     // User-specified Crime Types
     public static final String[] CRIME_TYPES = {
+            "All Crimes (Combined Risk)",
             "murder",
             "attempted murder",
             "rape",
@@ -153,9 +160,10 @@ public class CrimeRiskCalculator {
             "assault"
     };
 
-    public static final double[] CRIME_WEIGHTS = { 0.95, 0.90, 0.90, 0.85, 0.75, 0.70, 0.80 };
+    public static final double[] CRIME_WEIGHTS = { 0.82, 0.95, 0.90, 0.90, 0.85, 0.75, 0.70, 0.80 };
 
     public static final String[] CRIME_TIPS = {
+            "Maintain heightened general awareness across all crime categories, travel in groups, and keep emergency contacts accessible.",
             "Avoid isolated areas after dark and report suspicious behavior to law enforcement immediately.",
             "Stay in well-lit public areas, travel in groups, and remain vigilant of your surroundings.",
             "Avoid walking alone at night, stick to trusted routes, and keep emergency contacts handy.",
@@ -191,9 +199,19 @@ public class CrimeRiskCalculator {
     }
 
     public static CalculationResult calculate(String areaName, String crimeType, int hour,
+                                             int dayIndex, int monthIndex,
+                                             int recentCommunityReports) {
+        AreaInfo areaInfo = getAreaInfo(areaName);
+        return calculate(areaName, crimeType, hour, dayIndex, monthIndex, areaInfo.defaultSocioEconomicIndex, recentCommunityReports);
+    }
+
+    public static CalculationResult calculate(String areaName, String crimeType, int hour,
                                              int dayIndex, int monthIndex, int socioEconomicIndex,
                                              int recentCommunityReports) {
         AreaInfo areaInfo = getAreaInfo(areaName);
+        if (socioEconomicIndex <= 0) {
+            socioEconomicIndex = areaInfo.defaultSocioEconomicIndex;
+        }
         double baseline = areaInfo.baselineRisk;
 
         int crimeIdx = 0;

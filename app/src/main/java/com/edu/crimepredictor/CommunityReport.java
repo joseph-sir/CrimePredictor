@@ -13,9 +13,10 @@ public class CommunityReport implements Serializable {
     private long timestamp;
     private String by;
     private String role; // "user" or "le"
-    private String status; // "New", "Under investigation", "Resolved"
+    private String status; // "New", "Verified by SAPS", "Under investigation", "Resolved", "False / Rejected"
     private int confirmCount;
     private List<String> confirmedBy;
+    private String verifiedByOfficer;
 
     public CommunityReport() {
         this.confirmedBy = new ArrayList<>();
@@ -34,6 +35,7 @@ public class CommunityReport implements Serializable {
         this.status = status;
         this.confirmCount = confirmCount;
         this.confirmedBy = new ArrayList<>();
+        this.verifiedByOfficer = "";
     }
 
     public String getId() { return id; }
@@ -69,6 +71,19 @@ public class CommunityReport implements Serializable {
     public List<String> getConfirmedBy() {
         if (confirmedBy == null) confirmedBy = new ArrayList<>();
         return confirmedBy;
+    }
+
+    public String getVerifiedByOfficer() { return verifiedByOfficer != null ? verifiedByOfficer : ""; }
+    public void setVerifiedByOfficer(String verifiedByOfficer) { this.verifiedByOfficer = verifiedByOfficer; }
+
+    public boolean isVerifiedBySaps() {
+        String s = getStatus().toLowerCase();
+        return "le".equalsIgnoreCase(role) || s.contains("verified") || s.contains("investigation") || s.contains("resolved");
+    }
+
+    public boolean isRejected() {
+        String s = getStatus().toLowerCase();
+        return s.contains("false") || s.contains("rejected");
     }
 
     public boolean hasUserConfirmed(String email) {
